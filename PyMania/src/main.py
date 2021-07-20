@@ -1,5 +1,6 @@
 import pygame
 import threading
+import os
 
 from PyMania.src.config import *
 from PyMania.src.models import Player
@@ -12,7 +13,7 @@ pygame.display.set_caption("PyMania!")
 
 game_loop_event = threading.Event()
 game_clock = pygame.time.Clock()
-
+background_image = pygame.image.load("../assets/images/background.jpg")
 player = Player("explorer", 200, 200, 3, 4, screen)
 
 
@@ -20,10 +21,10 @@ while not game_loop_event.is_set():
     game_clock.tick(FPS)
 
     screen.fill(BACKGROUND_COLOUR)
-    pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
+    screen.blit(background_image, (0, 175))
+    pygame.draw.line(screen, RED, (0, 612), (SCREEN_WIDTH, 612))
     player.draw()
     player.move()
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_loop_event.set()
@@ -33,9 +34,15 @@ while not game_loop_event.is_set():
                 player.moving_left = True
             elif event.key == pygame.K_d:
                 player.moving_right = True
+            
+            if event.key == pygame.K_c:
+                player.slide = True
 
             if event.key == pygame.K_SPACE:
                 player.jump = True if player.in_air is False else False
+            
+            if event.key == pygame.K_ESCAPE:
+                game_loop_event.set()
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
