@@ -1,7 +1,9 @@
 import pygame
+import time
 
 from PyMania.src.helpers import load_animations
 from PyMania.src.enums import PlayerAnimationStates
+from PyMania.src.config import GRAVITY
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, char_type: str, x: int, y: int, scale: int, speed: int, screen: pygame.Surface):
@@ -19,17 +21,21 @@ class Player(pygame.sprite.Sprite):
         self.udpate_time = pygame.time.get_ticks()
         self.attacking = False
         self.last_attacked = pygame.time.get_ticks()
+        self.vel_y = 0
+        
 
         # movement states
 
         self.moving_left = False
         self.moving_right = False
+        self.in_air = False
+        self.jump = False
         self.idle = True
 
 
     
     def _load_animations(self, scale: int):
-        animation_types = ["idle", "run", "attack"]
+        animation_types = ["idle", "run", "attack", "jump"]
         for a_type in animation_types:
             animation_directory = f"../animations/{self.char_type}/{a_type}"
             frames = load_animations(animation_directory, scale)
@@ -67,6 +73,17 @@ class Player(pygame.sprite.Sprite):
         dx = 0
         dy = 0
         self.idle = True
+        
+
+        
+        
+        if self.jump and self.in_air is False:
+            self.change_action(PlayerAnimationStates.JUMP)
+            self.vel_y = -11
+            self.jump = False
+            self.in_air = True
+            self.idle = False
+
         if self.attacking:
             ATTACK_COOLDOWN = 75
             if pygame.time.get_ticks() - self.last_attacked > ATTACK_COOLDOWN:
@@ -74,6 +91,15 @@ class Player(pygame.sprite.Sprite):
                 self.change_action(PlayerAnimationStates.ATTACK)
             else:
                 self.attacking = False
+
+        self.vel_y += GRAVITY
+        if self.vel_y >= 10:
+            self.vel_y = 10
+        dy += self.vel_y
+        
+        if self.rect.bottom + dy >= 400:
+            dy = 400 - self.rect.bottom
+            self.in_air = False
 
         if self.moving_left:
             dx = -self.speed
@@ -87,9 +113,11 @@ class Player(pygame.sprite.Sprite):
             self.flip = False
             self.change_action(PlayerAnimationStates.RUN) if self.attacking is False else self.change_action(PlayerAnimationStates.ATTACK)
 
+
+
         if self.idle:
-            dx = 0
-            dy = 0
+            """dx = 0
+            dy = 0"""
             self.change_action(PlayerAnimationStates.IDLE)
 
         self.rect.x += dx

@@ -20,7 +20,7 @@ while not game_loop_event.is_set():
     game_clock.tick(FPS)
 
     screen.fill(BACKGROUND_COLOUR)
-
+    pygame.draw.line(screen, RED, (0, 400), (SCREEN_WIDTH, 400))
     player.draw()
     player.move()
 
@@ -33,6 +33,9 @@ while not game_loop_event.is_set():
                 player.moving_left = True
             elif event.key == pygame.K_d:
                 player.moving_right = True
+
+            if event.key == pygame.K_SPACE:
+                player.jump = True if player.in_air is False else False
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
